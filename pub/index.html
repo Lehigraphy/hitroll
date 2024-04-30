@@ -1,0 +1,431 @@
+ <!DOCTYPE html>
+<html>
+<body>
+
+<h1>Inputs</h1>
+
+<label for="models">Models:</label>
+<input type="number" id="models" name="models" min="1" value="5">
+<br>
+<label for="attacks">Attacks:</label>
+<input type="number" id="attacks" name="attacks" min="1" value="2">
+<br> <br>
+
+<label for="hit_on">Hit on:</label>
+  <select name="hit_on" id="hit_on">
+    <option value="2">2+</option>
+    <option value="3">3+</option>
+    <option value="4" selected="selected">4+</option>
+    <option value="5">5+</option>
+	<option value="6">6+</option>
+  </select>
+<label for="sustained_x">Sustained</label>
+  <select name="sustained_x" id="sustained_x">
+    <option value="0" selected="selected">0</option>
+    <option value="1">1</option>
+	<option value="2">2</option>
+	<option value="3">3</option>
+  </select>
+<label for="sustained_on">on</label>
+  <select name="sustained_on" id="sustained_on">
+    <option value="7" selected="selected">Never</option>
+    <option value="6">6+</option>
+    <option value="5">5+</option>
+    <option value="4">4+</option>
+	<option value="3">3+</option>
+	<option value="2">2+</option>
+  </select>
+<label for="lethal_on">lethal on</label>
+  <select name="lethal_on" id="lethal_on">
+    <option value="7" selected="selected">Never</option>
+    <option value="6">6+</option>
+    <option value="5">5+</option>
+    <option value="4">4+</option>
+	<option value="3">3+</option>
+	<option value="2">2+</option>
+  </select>
+<label for="reroll_hit">reroll</label>
+  <select name="reroll_hit" id="reroll_hit">
+    <option value="0" selected="Never">Never</option>
+    <option value="1">Roll of 1</option>
+    <option value="7">All</option>
+    <option value="once">Once</option>
+  </select>
+<br>
+
+
+
+
+
+<label for="wound_on">Wound on:</label>
+  <select name="wound_on" id="wound_on">
+    <option value="2">2+</option>
+    <option value="3">3+</option>
+    <option value="4" selected="selected">4+</option>
+    <option value="5">5+</option>
+	<option value="6">6+</option>
+  </select>
+<label for="devastating_on">devastating on</label>
+  <select name="devastating_on" id="devastating_on">
+    <option value="7" selected="selected">Never</option>
+    <option value="6">6+</option>
+    <option value="5">5+</option>
+    <option value="4">4+</option>
+	<option value="3">3+</option>
+	<option value="2">2+</option>
+  </select>
+<label for="reroll_wound">reroll</label>
+  <select name="reroll_wound" id="reroll_wound">
+    <option value="0" selected="Never">Never</option>
+    <option value="1">Roll of 1</option>
+    <option value="7">All</option>
+    <option value="once">Once</option>
+  </select>
+  
+  
+<br>
+<label for="save_on">Save on:</label>
+  <select name="save_on" id="save_on">
+    <option value="2">2+</option>
+    <option value="3">3+</option>
+    <option value="4" selected="selected">4+</option>
+    <option value="5">5+</option>
+	<option value="6">6+</option>
+	<option value="7">Never</option>
+  </select>
+<br>
+
+<label for="damage">Damage:</label>
+<input type="number" id="damage" name="damage" min="0" value="1">
+<label for="dmg_rand">+</label>
+  <select name="dmg_rand" id="dmg_rand">
+    <option value="None" selected="selected"></option>
+    <option value="D6">D6</option>
+    <option value="2D6">2D6</option>
+    <option value="D3">D3</option>
+	<option value="2D3">2D3</option>
+  </select>
+
+
+<br>
+  
+<button type="button"
+onclick="run_sim()">
+Calculate</button>
+
+<h1>Results</h1>
+<p id="target"></p>
+
+
+<script>
+
+const NROWS = 21;
+
+//initializations
+let tbody = init_table();
+
+for (let k=0; k<0; k++){
+console.log('WTF');
+}
+
+
+
+function run_sim(){
+
+let data = parse_inputs();
+console.log(data);
+
+let sim_data = simulate(data);
+let hist_passes = compute_hist(sim_data.passes);
+set_hit_hist(hist_passes, 1);
+
+let passes_lt = compute_less_cum(hist_passes);
+set_hit_hist(passes_lt, 2);
+
+let passes_gt = compute_larger_cum(hist_passes);
+set_hit_hist(passes_gt, 3);
+
+let hist_dmg = compute_hist(sim_data.damages);
+set_hit_hist(hist_dmg, 4);
+
+let out = compute_less_cum(hist_dmg);
+set_hit_hist(out, 5);
+
+out = compute_larger_cum(hist_dmg);
+set_hit_hist(out, 6);
+}
+
+
+function set_hit_hist(hist, kcol){
+
+for (let krow=0; krow<NROWS;krow++){
+	tbody.rows[krow+1].cells[kcol].innerHTML = Number(hist[krow]).toFixed(1);
+}
+
+}
+
+function compute_hist(samples){
+let per_bin = new Array(NROWS).fill(0);
+for (let k = 0; k<samples.length; k++){
+	let ind = samples[k];
+	if (ind >= NROWS){
+		ind = NROWS-1;
+	}
+	per_bin[ ind ] += 1.0 / samples.length*100.0;
+}
+return per_bin
+}
+
+function compute_less_cum(hist){
+let cum = new Array(NROWS).fill(0);
+let prev = 0;
+for (let k = 0; k<NROWS; k++){
+	cum[k] = hist[k] + prev;
+	prev += hist[k]
+}
+return cum
+}
+
+function compute_larger_cum(hist){
+let cum = new Array(NROWS).fill(0);
+let prev = 0;
+for (let k = Nrows-1; k>=0; k--){
+	cum[k] = hist[k] + prev;
+	prev += hist[k]
+}
+return cum
+}
+
+function simulate(data){
+
+Nsamples = 10000;
+
+let passed_per_sim = new Array(Nsamples).fill(0);
+let damage_per_sim = new Array(Nsamples).fill(0);
+for (let ksample = 0; ksample < Nsamples; ksample++){
+	
+
+	
+	// going through attack seq
+	var passed_per_sample = 0;
+	var dmg = 0;
+	for (let kmodel = 1; kmodel<=data.models; kmodel++){
+		var nhits = 0;
+		var nwounds = 0;
+		var npassed = 0;
+		
+		
+		// hit roll for model
+		let n_rerolls = 0;
+		let kattack = 0;
+		while ( kattack<data.A){
+			kattack++;
+			hit = D6();
+			if (hit >= data.hitroll.hit_on){
+				nhits += 1;
+			} else if (hit <= data.hitroll.reroll_below){
+				n_rerolls += 1;
+			}
+			if (hit >= data.hitroll.lethal_on){
+				nwounds += 1;
+			}
+			if (hit >= data.hitroll.sustained_on){
+				nhits += data.hitroll.sustained_x;
+			}
+		}
+		// hit rerolls
+		n_rerolls = Math.min(data.hitroll.number_of_rerolls, n_rerolls);
+		kattack = 0;
+		while (kattack<n_rerolls){
+			kattack++;
+			hit = D6();
+			if (hit >= data.hitroll.hit_on){
+				nhits += 1;
+			}
+			if (hit >= data.hitroll.lethal_on){
+				nwounds += 1;
+			}
+			if (hit >= data.hitroll.sustained_on){
+				nhits += data.hitroll.sustained_x;
+			}
+		}
+		
+		// wound roll for model
+		n_rerolls = 0;
+		let kwound = 0;
+		while ( kwound < nhits){
+			kwound++;
+			d6 = D6();
+			if (d6 >= data.woundroll.wound_on){
+			nwounds += 1;
+			} else if (hit <= data.woundroll.reroll_below){
+				n_rerolls += 1;
+			}
+			if (d6 >= data.woundroll.devastating_on){
+				npassed += 1;
+			}
+		}
+		// wound rerolls
+		n_rerolls = Math.min(data.woundroll.number_of_rerolls, n_rerolls);
+		kwound = 0;
+		while (kwound < n_rerolls){
+			kwound++;
+			d6 = D6();
+			if (d6 >= data.woundroll.wound_on){
+			nwounds += 1;
+			}
+			if (d6 >= data.woundroll.devastating_on){
+				npassed += 1;
+			}
+		}
+		
+		// save roll
+		let ksave = 0;
+		while (ksave < nwounds){
+			ksave++;
+			d6 = D6();
+			if (d6 < data.saveroll.save_on){
+				npassed += 1;
+			}
+		}
+		passed_per_sample += npassed;
+		
+		// damage
+		dmg += npassed * data.damage_roll.dmg
+		//let kdam = 0;
+		//while (kdam < npassed){
+		//	kdam++;
+		for (let kdam=0; kdam<npassed;kdam++){
+			if (data.damage_roll.dice_dmg == "D6"){
+				dmg += D6();
+			} else if (data.damage_roll.dice_dmg == "2D6"){
+				dmg += D6() + D6();
+			} else if (data.damage_roll.dice_dmg == "D3"){
+				//dmg += D3();
+				dmg += 1;
+			} else if (data.damage_roll.dice_dmg == "2D3"){
+				dmg += D3() + D3();
+			}
+		}
+	}
+	passed_per_sim[ksample] = passed_per_sample;
+	damage_per_sim[ksample] = dmg;
+}
+let sim_data = {};
+sim_data.passes = passed_per_sim;
+sim_data.damages = damage_per_sim;
+
+return sim_data;
+}
+
+function D6() {
+  return Math.floor(Math.random() * 6) + 1;
+}
+
+function D3() {
+  return Math.floor(Math.random() * 3) + 1;
+}
+
+
+
+function parse_inputs(){
+let data = {};
+
+data.A = Number(document.getElementById("attacks").value);
+data.models = Number(document.getElementById("models").value);
+
+hitroll = {};
+hitroll.hit_on = Number(document.getElementById("hit_on").value);
+hitroll.lethal_on = Number(document.getElementById("lethal_on").value);
+hitroll.sustained_on = Number(document.getElementById("sustained_on").value);
+hitroll.sustained_x = Number(document.getElementById("sustained_x").value);
+
+reroll_input = document.getElementById("reroll_hit").value;
+if (reroll_input == "once"){
+	hitroll.reroll_below = 7;
+	hitroll.number_of_rerolls = 1;
+} else {
+	hitroll.reroll_below = Number(reroll_input);
+	hitroll.number_of_rerolls = data.A;
+}
+
+
+woundroll = {};
+woundroll.wound_on = Number(document.getElementById("wound_on").value);
+woundroll.devastating_on = Number(document.getElementById("devastating_on").value);
+
+reroll_input = document.getElementById("reroll_wound").value;
+if (reroll_input == "once"){
+	woundroll.reroll_below = 7;
+	woundroll.number_of_rerolls = 1;
+} else {
+	woundroll.reroll_below = Number(reroll_input);
+	woundroll.number_of_rerolls = data.A;
+}
+
+
+saveroll = {};
+saveroll.save_on = Number(document.getElementById("save_on").value);
+
+damage_roll = {};
+damage_roll.dmg = Number(document.getElementById("damage").value);
+damage_roll.dice_dmg = document.getElementById("dmg_rand").value;
+
+data.hitroll = hitroll;
+data.woundroll = woundroll;
+data.saveroll = saveroll;
+data.damage_roll = damage_roll;
+
+
+return data;
+}
+
+
+
+function init_table(){
+	var table = document.createElement('table');
+	var header = document.createElement('thead');
+	header.innerHTML = "<tr><td></td></tr>";
+	var body = document.createElement('tbody');
+
+	Nrows = 21;
+	Ncols = 7;
+	
+	//headers
+	let titles = ["No.", "Passed attacks (hist, %)", "Passed attacks leq", "Passed attacks geq", "Dmg, hist", "Dmg leq", "Dmg geq"];
+	var row = document.createElement('tr');
+	for (let kcol=0; kcol<Ncols; kcol++){
+			var cell = document.createElement('th');
+			cell.innerHTML = titles[kcol];
+			row.appendChild(cell);
+	}
+	body.appendChild(row);
+
+	for (let krow=0; krow<Nrows;krow++){
+		var row = document.createElement('tr');
+		for (let kcol=0; kcol<Ncols; kcol++){
+			var cell = document.createElement('td');
+			cell.innerHTML = krow;
+			row.appendChild(cell);
+		}
+		body.appendChild(row);
+	}
+	table.appendChild(header);
+	table.appendChild(body);
+
+	document.getElementById('target').appendChild(table);
+
+	for (let krow=10000; krow<Nrows;krow++){
+		for (let kcol=1; kcol<Ncols; kcol++){
+			body.rows[krow].cells[kcol].innerHTML = 0.0 + "%"; 
+		}
+	}
+	
+	return body;
+}
+
+
+</script>
+
+</body>
+</html> 
