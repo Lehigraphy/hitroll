@@ -334,7 +334,7 @@ for (let ksample = 0; ksample < Nsamples; ksample++){
 			} else if (data.damage_roll.dice_dmg == "2D6"){
 				dice_dmg = D6() + D6();
 			} else if (data.damage_roll.dice_dmg == "D3"){
-				dice_dmg = 1;
+				dice_dmg = D3();
 			} else if (data.damage_roll.dice_dmg == "2D3"){
 				dice_dmg = D3() + D3();
 			}
@@ -347,7 +347,7 @@ for (let ksample = 0; ksample < Nsamples; ksample++){
 				} else if (data.damage_roll.dice_dmg == "2D6"){
 					dice_dmg = D6() + D6();
 				} else if (data.damage_roll.dice_dmg == "D3"){
-					dice_dmg = 1;
+					dice_dmg = D3();
 				} else if (data.damage_roll.dice_dmg == "2D3"){
 					dice_dmg = D3() + D3();
 				}
