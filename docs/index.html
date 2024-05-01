@@ -1,5 +1,6 @@
  <!DOCTYPE html>
 <html>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <body>
 
 <h1>Inputs</h1>
@@ -135,6 +136,33 @@ Calculate</button>
 <p id="target"></p>
 
 <br>
+
+<div id="attacks_plot" style="width:30%;max-width:700px"></div>
+<div id="wounds_plot" style="width:30%;max-width:700px"></div>
+<div id="killed_plot" style="width:30%;max-width:700px"></div>
+
+<br>
+<h1>FAQ</h1>
+<ul>
+  <li>Regular textbook Monte-Carlo analysis is used</li>
+  <li>Three sets of figures-of-merit are shown:</li>
+  <ul>
+	<li>Successful attacks: A successful attack consists of a successful hit (regular or from sustained), successful wound (lethal hit or regular), and a failed save.</li>
+	<li>Raw damage inflicted. A sum of the damage inflicted by each successful attack. FNP to be considered in the future, perhaps.jpg.</li>
+	<li>Number of models killed. Extra damage lost here.</li>
+  </ul>
+  <li>For each figure of merit, three alternative representations are shown (using inflicted damage as an example):</li>
+    <ul>
+	<li>Histogram: Probability of the &lt;inflicted damage&gt; being exactly this.</li>
+	<li>Cumulative density: Probability of the &lt;inflicted damage&gt; being at most this.</li>
+	<li>Survivorship: Probability of the &lt;inflicted damage&gt; being at least this.</li>
+  </ul>
+  <li>Four reroll options are available for most throws: No rerolls, reroll all failed, reroll each roll of 1, and one re-roll per model and throw type. Ironstorm-type one-re-roll-per-model scheme
+  is not supported.</li>
+  <li>For damage re-rolls, the user can also specify the reroll strategy, i.e. the dice threshold below which the roll should be rerolled.
+</ul> 
+
+<br>
 <h2>Changelog</h2>
 * Added wounds and kill counts
 * Damage rerolls now implemented
@@ -166,22 +194,53 @@ set_hit_hist(passes_lt, 2);
 let passes_gt = compute_larger_cum(hist_passes);
 set_hit_hist(passes_gt, 3);
 
-//dmg data
+//wounds data
 let hist_dmg = compute_hist(sim_data.damages);
 set_hit_hist(hist_dmg, 4);
 
-let out = compute_less_cum(hist_dmg);
-set_hit_hist(out, 5);
+let dmg_lt = compute_less_cum(hist_dmg);
+set_hit_hist(dmg_lt, 5);
 
-out = compute_larger_cum(hist_dmg);
-set_hit_hist(out, 6);
+dmg_gt = compute_larger_cum(hist_dmg);
+set_hit_hist(dmg_gt, 6);
 
 //killed data
 let hist_killed = compute_hist(sim_data.killed);
-out = compute_less_cum(hist_killed);
-set_hit_hist(out, 7);
-out = compute_larger_cum(hist_killed);
-set_hit_hist(out, 8);
+killed_lt = compute_less_cum(hist_killed);
+set_hit_hist(killed_lt, 7);
+killed_gt = compute_larger_cum(hist_killed);
+set_hit_hist(killed_gt, 8);
+
+
+// plotting
+const count_range = [];
+for (let x = 0; x <Nrows ; x++) {
+  count_range.push(x);
+}
+
+// passed attacks
+let plot_data = [];
+plot_data.push({x:count_range, y:hist_passes, mode:"lines", name:"Histogram"});
+plot_data.push({x:count_range, y:passes_lt, mode:"lines", name:"At most"});
+plot_data.push({x:count_range, y:passes_gt, mode:"lines", name:"At least"});
+let layout = {title: "Successful attacks"};
+Plotly.newPlot("attacks_plot", plot_data, layout);
+
+//wounds
+plot_data = [];
+plot_data.push({x:count_range, y:hist_dmg, mode:"lines", name:"Histogram"});
+plot_data.push({x:count_range, y:dmg_lt, mode:"lines", name:"At most"});
+plot_data.push({x:count_range, y:dmg_gt, mode:"lines", name:"At least"});
+layout = {title: "Inflicted damage (raw)"};
+Plotly.newPlot("wounds_plot", plot_data, layout);
+
+//killed
+plot_data = [];
+plot_data.push({x:count_range, y:hist_killed, mode:"lines", name:"Histogram"});
+plot_data.push({x:count_range, y:killed_lt, mode:"lines", name:"At most"});
+plot_data.push({x:count_range, y:killed_gt, mode:"lines", name:"At least"});
+layout = {title: "Models destroyed"};
+Plotly.newPlot("killed_plot", plot_data, layout);
 
 
 }
@@ -461,7 +520,7 @@ function init_table(){
 	Ncols = 9;
 	
 	//headers
-	let titles = ["No.", "Passed attacks (hist, %)", "Passed attacks leq", "Passed attacks geq", "Dmg, hist", "Dmg leq", "Dmg geq", "Killed leq", "Killed geq"];
+	let titles = ["No.", "Successful attacks (hist, %)", "Successful attacks leq", "Successful attacks geq", "Dmg, hist", "Dmg leq", "Dmg geq", "Killed leq", "Killed geq"];
 	var row = document.createElement('tr');
 	for (let kcol=0; kcol<Ncols; kcol++){
 			var cell = document.createElement('th');
