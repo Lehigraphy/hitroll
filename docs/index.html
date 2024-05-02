@@ -1,7 +1,12 @@
  <!DOCTYPE html>
 <html>
+<title>40k Dice Roll Simulator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <body>
+
+<div class="w3-container">
 
 <h1>Inputs</h1>
 
@@ -62,8 +67,6 @@
     <option value="once">Once</option>
   </select>
 <br>
-
-
 
 
 
@@ -134,23 +137,35 @@
 <br>
 <label for="wounds">Wounds:</label>
 <input type="number" id="wounds" name="wounds" min="1" value="1">
-
 <br>
+
   
 <button type="button"
 onclick="run_sim()">
 Calculate</button>
 
+</div>
+
+
+<div class="w3-container>
 <h1>Results</h1>
 <p id="target"></p>
+<div class="w3-responsive">
+<table class="w3-table w3-striped" id="results_table">
+</table>
+</div>
+</div>
 
 <br>
 
+<div class="w3-container">
 <div id="attacks_plot" style="width:100%;max-width:700px"></div>
 <div id="wounds_plot" style="width:100%;max-width:700px"></div>
 <div id="killed_plot" style="width:100%;max-width:700px"></div>
+</div>
 
 <br>
+<div class="w3-container">
 <h1>FAQ</h1>
 <ul>
   <li>Regular textbook Monte-Carlo analysis is used</li>
@@ -170,22 +185,28 @@ Calculate</button>
   is not supported.</li>
   <li>For damage re-rolls, the user can also specify the reroll strategy, i.e. the dice threshold below which the roll should be rerolled.
 </ul> 
+</div>
 
 <br>
+
+</div>
 <h2>Changelog</h2>
 * Added wounds and kill counts
 <br>
 * Damage rerolls now implemented
 <br>
 * Plots, variable number of attacks
-
+<br>
+* Responsive layout
+</div>
 
 <script>
 
 const NROWS = 21;
 
 //initializations
-let tbody = init_table();
+//let tbody = init_table();
+let tbody = init_table_w3();
 
 
 
@@ -230,13 +251,15 @@ for (let x = 0; x <Nrows ; x++) {
   count_range.push(x);
 }
 
+const config = {responsive: true}
+
 // passed attacks
 let plot_data = [];
 plot_data.push({x:count_range, y:hist_passes, mode:"lines", name:"Histogram"});
 plot_data.push({x:count_range, y:passes_lt, mode:"lines", name:"At most"});
 plot_data.push({x:count_range, y:passes_gt, mode:"lines", name:"At least"});
 let layout = {title: "Successful attacks"};
-Plotly.newPlot("attacks_plot", plot_data, layout);
+Plotly.newPlot("attacks_plot", plot_data, layout, config);
 
 //wounds
 plot_data = [];
@@ -244,7 +267,7 @@ plot_data.push({x:count_range, y:hist_dmg, mode:"lines", name:"Histogram"});
 plot_data.push({x:count_range, y:dmg_lt, mode:"lines", name:"At most"});
 plot_data.push({x:count_range, y:dmg_gt, mode:"lines", name:"At least"});
 layout = {title: "Inflicted damage (raw)"};
-Plotly.newPlot("wounds_plot", plot_data, layout);
+Plotly.newPlot("wounds_plot", plot_data, layout, config);
 
 //killed
 plot_data = [];
@@ -252,7 +275,7 @@ plot_data.push({x:count_range, y:hist_killed, mode:"lines", name:"Histogram"});
 plot_data.push({x:count_range, y:killed_lt, mode:"lines", name:"At most"});
 plot_data.push({x:count_range, y:killed_gt, mode:"lines", name:"At least"});
 layout = {title: "Models destroyed"};
-Plotly.newPlot("killed_plot", plot_data, layout);
+Plotly.newPlot("killed_plot", plot_data, layout, config);
 
 
 }
@@ -525,6 +548,48 @@ data.wounds = Number(document.getElementById("wounds").value);
 return data;
 }
 
+
+function init_table_w3(){
+	var table = document.getElementById('results_table');
+	//var header = document.createElement('thead');
+	//header.innerHTML = "<tr><td></td></tr>";
+	var body = document.createElement('tbody');
+
+	Nrows = 21;
+	Ncols = 9;
+	
+	//headers
+	let titles = ["No.", "Successful attacks (hist, %)", "Successful attacks leq", "Successful attacks geq", "Dmg, hist", "Dmg leq", "Dmg geq", "Killed leq", "Killed geq"];
+	var row = document.createElement('tr');
+	for (let kcol=0; kcol<Ncols; kcol++){
+			var cell = document.createElement('th');
+			cell.innerHTML = titles[kcol];
+			row.appendChild(cell);
+	}
+	body.appendChild(row);
+
+	for (let krow=0; krow<Nrows;krow++){
+		var row = document.createElement('tr');
+		for (let kcol=0; kcol<Ncols; kcol++){
+			var cell = document.createElement('td');
+			cell.innerHTML = krow;
+			row.appendChild(cell);
+		}
+		body.appendChild(row);
+	}
+	//table.appendChild(header);
+	table.appendChild(body);
+
+	//document.getElementById('target').appendChild(table);
+
+	for (let krow=10000; krow<Nrows;krow++){
+		for (let kcol=1; kcol<Ncols; kcol++){
+			body.rows[krow].cells[kcol].innerHTML = 0.0 + "%"; 
+		}
+	}
+	
+	return body;
+}
 
 function init_table(){
 	var table = document.createElement('table');
