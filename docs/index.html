@@ -10,6 +10,14 @@
 <br>
 <label for="attacks">Attacks:</label>
 <input type="number" id="attacks" name="attacks" min="1" value="2">
+<label for="dice_attacks">+</label>
+  <select name="dice_attacks" id="dice_attacks">
+    <option value="None" selected="selected"></option>
+    <option value="D6">D6</option>
+    <option value="2D6">2D6</option>
+    <option value="D3">D3</option>
+	<option value="2D3">2D3</option>
+</select>
 <br> <br>
 
 <label for="hit_on">Hit on:</label>
@@ -19,6 +27,7 @@
     <option value="4" selected="selected">4+</option>
     <option value="5">5+</option>
 	<option value="6">6+</option>
+	<option value="-1">Always</option>
   </select>
 <label for="sustained_x">Sustained</label>
   <select name="sustained_x" id="sustained_x">
@@ -165,7 +174,10 @@ Calculate</button>
 <br>
 <h2>Changelog</h2>
 * Added wounds and kill counts
+<br>
 * Damage rerolls now implemented
+<br>
+* Plots, variable number of attacks
 
 
 <script>
@@ -288,13 +300,15 @@ return cum
 
 function simulate(data){
 
-Nsamples = 10000;
+let Nsamples = 10000;
+//Nsamples = 1;
 
 let passed_per_sim = new Array(Nsamples).fill(0);
 let damage_per_sim = new Array(Nsamples).fill(0);
 let killed_per_sim = new Array(Nsamples).fill(0);
 for (let ksample = 0; ksample < Nsamples; ksample++){
 	// going through attack seq
+	let number_of_attacks = 0;
 	var passed_per_sample = 0;
 	var dmg = 0;
 	var killed = 0;
@@ -306,9 +320,10 @@ for (let ksample = 0; ksample < Nsamples; ksample++){
 		
 		
 		// hit roll for model
+		number_of_attacks = data.A + multiD(data.dice_attacks);
 		let n_rerolls = 0;
 		let kattack = 0;
-		while ( kattack<data.A){
+		while ( kattack<number_of_attacks){
 			kattack++;
 			hit = D6();
 			if (hit >= data.hitroll.hit_on){
@@ -387,29 +402,13 @@ for (let ksample = 0; ksample < Nsamples; ksample++){
 		for (let kdam=0; kdam<npassed;kdam++){
 			dmg_per_attack = data.damage_roll.dmg;
 			
-			//dice dmg
-			if (data.damage_roll.dice_dmg == "D6"){
-				dice_dmg = D6();
-			} else if (data.damage_roll.dice_dmg == "2D6"){
-				dice_dmg = D6() + D6();
-			} else if (data.damage_roll.dice_dmg == "D3"){
-				dice_dmg = D3();
-			} else if (data.damage_roll.dice_dmg == "2D3"){
-				dice_dmg = D3() + D3();
-			}
+			//dice 
+			dice_dmg = multiD(data.damage_roll.dice_dmg);
 			
 			//reroll dice dmg?
 			if (dice_dmg <= data.damage_roll.reroll_below && number_rerolled < damage_roll.number_of_rerolls) {
 				number_rerolled += 1;
-				if (data.damage_roll.dice_dmg == "D6"){
-					dice_dmg = D6();
-				} else if (data.damage_roll.dice_dmg == "2D6"){
-					dice_dmg = D6() + D6();
-				} else if (data.damage_roll.dice_dmg == "D3"){
-					dice_dmg = D3();
-				} else if (data.damage_roll.dice_dmg == "2D3"){
-					dice_dmg = D3() + D3();
-				}
+				dice_dmg = multiD(data.damage_roll.dice_dmg);
 			}
 			//add variable damage to attack damage
 			dmg_per_attack += dice_dmg;
@@ -437,6 +436,21 @@ sim_data.killed = killed_per_sim;
 return sim_data;
 }
 
+function multiD(arg){
+if (arg == "D6"){
+	dice_dmg = D6();
+} else if (arg == "2D6"){
+	dice_dmg = D6() + D6();
+} else if (arg == "D3"){
+	dice_dmg = D3();
+} else if (arg == "2D3"){
+	dice_dmg = D3() + D3();
+} else {
+	dice_dmg = 0;
+}
+return dice_dmg;
+}
+
 function D6() {
   return Math.floor(Math.random() * 6) + 1;
 }
@@ -450,6 +464,8 @@ function parse_inputs(){
 let data = {};
 
 data.A = Number(document.getElementById("attacks").value);
+data.dice_attacks = document.getElementById("dice_attacks").value;
+
 data.models = Number(document.getElementById("models").value);
 
 hitroll = {};
