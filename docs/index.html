@@ -137,6 +137,13 @@
 <br>
 <label for="wounds">Wounds:</label>
 <input type="number" id="wounds" name="wounds" min="1" value="1">
+<label for="fnp">FNP</label>
+<select name="fnp" id="fnp">
+    <option value="7" selected="selected">None</option>
+	<option value="6">6+</option>
+	<option value="5">5+</option>
+	<option value="4">4+</option>
+</select>
 <br>
 
   
@@ -172,7 +179,7 @@ Calculate</button>
   <li>Three sets of figures-of-merit are shown:</li>
   <ul>
 	<li>Successful attacks: A successful attack consists of a successful hit (regular or from sustained), successful wound (lethal hit or regular), and a failed save.</li>
-	<li>Raw damage inflicted. A sum of the damage inflicted by each successful attack. FNP to be considered in the future, perhaps.jpg.</li>
+	<li>Raw damage inflicted. A sum of the damage inflicted by each successful attack, minus FNP effects if any.</li>
 	<li>Number of models killed. Extra damage lost here.</li>
   </ul>
   <li>For each figure of merit, three alternative representations are shown (using inflicted damage as an example):</li>
@@ -189,7 +196,7 @@ Calculate</button>
 
 <br>
 
-</div>
+<div>
 <h2>Changelog</h2>
 * Added wounds and kill counts
 <br>
@@ -435,6 +442,15 @@ for (let ksample = 0; ksample < Nsamples; ksample++){
 			}
 			//add variable damage to attack damage
 			dmg_per_attack += dice_dmg;
+			
+			//considering FNP
+			let dam_orig = dmg_per_attack;
+			for (let kfnp=0; kfnp<dam_orig; kfnp++){
+				if (D6() >= data.fnp) {
+					dmg_per_attack -= 1;
+				}
+			}
+			
 			// adding to cumulative damage
 			dmg += dmg_per_attack;
 			
@@ -543,6 +559,7 @@ data.woundroll = woundroll;
 data.saveroll = saveroll;
 data.damage_roll = damage_roll;
 data.wounds = Number(document.getElementById("wounds").value);
+data.fnp = Number(document.getElementById("fnp").value);
 
 
 return data;
