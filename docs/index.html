@@ -11,10 +11,10 @@
 <h1>Inputs</h1>
 
 <label for="models">Models:</label>
-<input type="number" id="models" name="models" min="1" value="5">
+<input type="number" id="models" name="models" min="1" value="5" style="width: 4em">
 <br>
 <label for="attacks">Attacks:</label>
-<input type="number" id="attacks" name="attacks" min="0" value="2">
+<input type="number" id="attacks" name="attacks" min="0" value="2" style="width: 4em">
 <label for="dice_attacks">+</label>
   <select name="dice_attacks" id="dice_attacks">
     <option value="None" selected="selected"></option>
@@ -109,7 +109,7 @@
 <br>
 
 <label for="damage">Damage:</label>
-<input type="number" id="damage" name="damage" min="0" value="1">
+<input type="number" id="damage" name="damage" min="0" value="1"  style="width: 4em">
 <label for="dmg_rand">+</label>
   <select name="dmg_rand" id="dmg_rand">
     <option value="None" selected="selected"></option>
@@ -136,7 +136,7 @@
 
 <br>
 <label for="wounds">Wounds:</label>
-<input type="number" id="wounds" name="wounds" min="1" value="1">
+<input type="number" id="wounds" name="wounds" min="1" value="1"  style="width: 4em">
 <label for="fnp">FNP</label>
 <select name="fnp" id="fnp">
     <option value="7" selected="selected">None</option>
@@ -150,7 +150,20 @@
 <button type="button"
 onclick="run_sim()">
 Calculate</button>
+</div>
 
+<br>
+
+<div class="w3-container">
+<button type="button"
+onclick="reset_rerolls()">
+Reset re-rolls</button>
+<button type="button"
+onclick="reset_buffs()">
+Reset buffs</button>
+<button type="button"
+onclick="reset_dice()">
+Reset dice</button>
 </div>
 
 
@@ -207,6 +220,8 @@ Calculate</button>
 * Responsive layout
 <br>
 * FEEL! NO! PAIN!
+<br>
+* Style. Reset puttons.
 </div>
 
 <script>
@@ -216,6 +231,26 @@ const NROWS = 21;
 //initializations
 //let tbody = init_table();
 let tbody = init_table_w3();
+
+function reset_rerolls(){
+document.getElementById('reroll_hit').value = 0;
+document.getElementById('reroll_wound').value = 0;
+document.getElementById('reroll_dmg_below').value = 1;
+document.getElementById('reroll_dmg_when').value = "Never";
+}
+
+function reset_buffs(){
+document.getElementById('sustained_x').value = 0;
+document.getElementById('sustained_on').value = 7;
+document.getElementById('lethal_on').value = 7;
+document.getElementById('devastating_on').value = 7;
+document.getElementById('fnp').value = 7;
+}
+
+function reset_dice(){
+document.getElementById('dmg_rand').value = "None";
+document.getElementById('dice_attacks').value = "None";
+}
 
 
 
