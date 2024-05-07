@@ -133,10 +133,17 @@
     <option value="Always">Always</option>
     <option value="Once">Once</option>
   </select>
+<label for="melta">Melta </label>
+<input type="number" id="melta" name="melta" min="0" value="0"  style="width: 4em">
 
 <br>
 <label for="wounds">Wounds:</label>
 <input type="number" id="wounds" name="wounds" min="1" value="1"  style="width: 4em">
+<select name="dmg_modifiers" id="dmg_modifiers">
+    <option value="None" selected="selected">No modifiers</option>
+	<option value="minus_1">-1</option>
+	<option value="halve">halve</option>
+</select>
 <label for="fnp">FNP</label>
 <select name="fnp" id="fnp">
     <option value="7" selected="selected">None</option>
@@ -222,6 +229,8 @@ Reset dice</button>
 * FEEL! NO! PAIN!
 <br>
 * Style. Reset puttons.
+<br>
+* Damage modifiers and melta.
 </div>
 
 <script>
@@ -245,6 +254,8 @@ document.getElementById('sustained_on').value = 7;
 document.getElementById('lethal_on').value = 7;
 document.getElementById('devastating_on').value = 7;
 document.getElementById('fnp').value = 7;
+document.getElementById('melta').value = 0;
+document.getElementById('dmg_modifiers').value = "None";
 }
 
 function reset_dice(){
@@ -480,6 +491,19 @@ for (let ksample = 0; ksample < Nsamples; ksample++){
 			//add variable damage to attack damage
 			dmg_per_attack += dice_dmg;
 			
+			
+			//damage modifiers
+			if (data.dmg_modifiers === "halve"){
+				dmg_per_attack = Math.ceil(dmg_per_attack/2.0);
+			}
+			if (data.dmg_modifiers === "minus_1"){
+				dmg_per_attack = Math.max(1, dmg_per_attack-1);
+			}
+			
+			//melta damage
+			dmg_per_attack += data.damage_roll.melta;
+			
+			
 			//considering FNP
 			let dam_orig = dmg_per_attack;
 			for (let kfnp=0; kfnp<dam_orig; kfnp++){
@@ -580,6 +604,7 @@ saveroll.save_on = Number(document.getElementById("save_on").value);
 damage_roll = {};
 damage_roll.dmg = Number(document.getElementById("damage").value);
 damage_roll.dice_dmg = document.getElementById("dmg_rand").value;
+damage_roll.melta = Number(document.getElementById("melta").value);
 
 damage_roll.reroll_below = Number(document.getElementById("reroll_dmg_below").value);
 reroll_input_when = document.getElementById("reroll_dmg_when").value;
@@ -596,6 +621,7 @@ data.woundroll = woundroll;
 data.saveroll = saveroll;
 data.damage_roll = damage_roll;
 data.wounds = Number(document.getElementById("wounds").value);
+data.dmg_modifiers = document.getElementById("dmg_modifiers").value;
 data.fnp = Number(document.getElementById("fnp").value);
 
 
