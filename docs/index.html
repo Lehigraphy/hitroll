@@ -450,7 +450,7 @@ for (let ksample = 0; ksample < Nsamples; ksample++){
 				npassed += 1;
 			} else if (d6 >= data.woundroll.wound_on){
 				nwounds += 1;
-			} else if (hit <= data.woundroll.reroll_below){
+			} else if (d6 <= data.woundroll.reroll_below){
 				n_rerolls += 1;
 			} 
 		}
