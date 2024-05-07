@@ -417,8 +417,8 @@ for (let ksample = 0; ksample < Nsamples; ksample++){
 				n_rerolls += 1;
 			}
 			
-			//sustained while we're at it, only if this roll was not rerolled
-			if (hit >= data.hitroll.sustained_on && hit > data.hitroll.hit_on){
+			//sustained while we're at it
+			if (hit >= data.hitroll.sustained_on){
 				nhits += data.hitroll.sustained_x;
 			}
 		}
@@ -435,7 +435,7 @@ for (let ksample = 0; ksample < Nsamples; ksample++){
 				nhits += 1;
 			}
 			
-			if (hit >= data.hitroll.sustained_on && hit > data.hitroll.hit_on) {
+			if (hit >= data.hitroll.sustained_on) {
 				nhits += data.hitroll.sustained_x;
 			}
 		}
